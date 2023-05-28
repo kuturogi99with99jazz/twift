@@ -1,0 +1,66 @@
+﻿@page "/sampletable"
+@inject ISampleTableService SampleTableService;
+
+<PageTitle>Sample Table</PageTitle>
+
+<h1>Sample Table</h1>
+
+<p>This component demonstrates fetching data from a DB.</p>
+
+@if (samples == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var sample in samples)
+            {
+                <tr>
+                    <td>@sample.Id</td>
+                    <td>@sample.Name</td>
+                    <td>@sample.Description</td>
+                </tr>
+            }
+            <tr>
+                <td><button @onclick="AddSample">add</button></td>
+                <td><input type="text" name="name" id="name" placeholder="Name" @bind="newName"></td>
+                <td><input type="text" name="description" id="description" placeholder="Description" @bind="newDescription">
+                </td>
+            </tr>
+        </tbody>
+    </table>
+}
+
+@code {
+    private IEnumerable<src.DB.SampleTable>? samples;
+    private string? newName;
+    private string? newDescription;
+
+    protected override async Task OnInitializedAsync()
+    {
+        samples = await SampleTableService.GetSamplesAsync();
+    }
+
+    private async void AddSample()
+    {
+        if (!string.IsNullOrWhiteSpace(newName) && !string.IsNullOrWhiteSpace(newDescription))
+        {
+            var sample = SampleTableService.CreateSample(new src.DB.SampleTable { Name = newName, Description = newDescription });
+            if (sample != default)
+            {
+                samples = await SampleTableService.GetSamplesAsync();
+                newName = "";
+                newDescription = "";
+            }
+        }
+    }
+}
